@@ -54,7 +54,6 @@ export class CompanyService {
   }
 
   deleteCompany(id: string | null) {
-    if(!id) return;
     return this.companiesRef.doc(id).delete()
       .then(_ => console.log('Success on delete'))
       .catch(error => console.log('delete', error));

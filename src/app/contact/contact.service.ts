@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Contact } from '../models/contact';
 import { catchError, map, Observable, throwError } from 'rxjs';
-import {AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument, DocumentChangeAction} from "@angular/fire/compat/firestore";
+import {AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument, CollectionReference, DocumentChangeAction} from "@angular/fire/compat/firestore";
 
 @Injectable({
   providedIn: 'root'
@@ -17,21 +17,27 @@ export class ContactService {
     this.contactsRef = this.db.collection<Contact>('contacts');
   }
 
-  getContactsObservable(): Observable<Contact[]> {
-    return this.contactsRef.snapshotChanges()
+  getContactsObservable(companyId: string): Observable<Contact[]> {
+    const filteredContacts = companyId != null ?
+      this.db.collection<Contact>('contacts', (ref: CollectionReference) => ref.where('companyId', '==', companyId))
+      : this.contactsRef;
+
+    return filteredContacts.snapshotChanges()
       .pipe(
         map((items: DocumentChangeAction<Contact>[]): Contact[] => {
           return items.map((item: DocumentChangeAction<Contact>): Contact => {
             return {
               id: item.payload.doc.id,
+              companyId: item.payload.doc.data().companyId,
               name: item.payload.doc.data().name,
               phone: item.payload.doc.data().phone
             };
           });
-        }),                           // <-- don't forget the new comma here
+        }),
         catchError(this.errorHandler)
       );
   }
+
 
   getContactObservable(id: string | null): Observable<Contact | undefined> {
     return this.db.doc<Contact>(`contacts/${id}`)
@@ -48,13 +54,12 @@ export class ContactService {
   }
 
   editContact(contact: Contact) {
-    this.contactsRef.doc(contact.id).update(contact)
+    return this.contactsRef.doc(contact.id).update(contact)
       .then(_ => console.log('Success on update'))
       .catch(error => console.log('update', error));
   }
 
   deleteContact(id: string | null) {
-    if(!id) return;
     return this.contactsRef.doc(id).delete()
       .then(_ => console.log('Success on delete'))
       .catch(error => console.log('delete', error));
