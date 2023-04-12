@@ -22,6 +22,7 @@ export class CompanyService {
       .pipe(
         map((items: DocumentChangeAction<Company>[]): Company[] => {
           return items.map((item: DocumentChangeAction<Company>): Company => {
+            console.log(item.payload.doc.data().name)
             return {
               id: item.payload.doc.id,
               name: item.payload.doc.data().name,

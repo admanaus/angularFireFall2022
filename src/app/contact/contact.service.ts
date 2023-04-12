@@ -1,7 +1,15 @@
 import { Injectable } from '@angular/core';
+import {
+  AngularFirestore,
+  AngularFirestoreCollection,
+  AngularFirestoreDocument,
+  CollectionReference,
+  DocumentChangeAction
+} from "@angular/fire/compat/firestore";
+
+import { Observable, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { Contact } from '../models/contact';
-import { catchError, map, Observable, throwError } from 'rxjs';
-import {AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument, CollectionReference, DocumentChangeAction} from "@angular/fire/compat/firestore";
 
 @Injectable({
   providedIn: 'root'
@@ -9,12 +17,20 @@ import {AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument, 
 export class ContactService {
 
   private contactRef: AngularFirestoreDocument<Contact>;
+
   private contactsRef: AngularFirestoreCollection<Contact>;
 
-
   constructor(private db: AngularFirestore) {
-    this.contactRef = this.db.doc<Contact>('contacts/zW4ivi07pOfxFnfPlInk');
+    this.contactRef = this.db.doc<Contact>('contacts/9pMLuG9tpU4utRtci8o9');
     this.contactsRef = this.db.collection<Contact>('contacts');
+  }
+
+  getContactObservable(id: string): Observable<Contact> {
+    return this.db.doc<Contact>(`contacts/${ id }`)
+      .valueChanges()
+      .pipe(
+        catchError(this.errorHandler)
+      );
   }
 
   getContactsObservable(companyId: string): Observable<Contact[]> {
@@ -38,17 +54,8 @@ export class ContactService {
       );
   }
 
-
-  getContactObservable(id: string | null): Observable<Contact | undefined> {
-    return this.db.doc<Contact>(`contacts/${id}`)
-    .valueChanges()
-    .pipe(                          // <-- new
-    catchError(this.errorHandler) // <-- new
-  );                              // <-- new;
-  }
-
   saveContact(contact: Contact) {
-    this.contactsRef.add(contact)
+    return this.contactsRef.add(contact)
       .then(_ => console.log('success on add'))
       .catch(error => console.log('add', error));
   }
@@ -59,17 +66,15 @@ export class ContactService {
       .catch(error => console.log('update', error));
   }
 
-  deleteContact(id: string | null) {
+  deleteContact(id: string) {
     return this.contactsRef.doc(id).delete()
       .then(_ => console.log('Success on delete'))
       .catch(error => console.log('delete', error));
   }
 
-  private errorHandler(error: unknown) {
+  private errorHandler(error) {
     console.log(error);
     return throwError(error);
   }
 
 }
-
-
