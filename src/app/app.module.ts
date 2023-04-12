@@ -15,13 +15,19 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
 import { CompanyListComponent } from './company/company-list/company-list.component';
+import {MatIconModule} from '@angular/material/icon';
+import { ContactListComponent } from './contact/contact-list/contact-list.component';
+import { ContactEditComponent } from './contact/contact-edit/contact-edit.component';
+
 
 
 @NgModule({
   declarations: [
     AppComponent,
     CompanyEditComponent,
-    CompanyListComponent
+    CompanyListComponent,
+    ContactEditComponent,
+    ContactListComponent,
   ],
   imports: [
     BrowserModule,
@@ -35,6 +41,7 @@ import { CompanyListComponent } from './company/company-list/company-list.compon
     MatButtonModule,
     MatFormFieldModule,
     FormsModule,
+    MatIconModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
